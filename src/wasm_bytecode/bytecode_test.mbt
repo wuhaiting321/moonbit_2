@@ -161,3 +161,127 @@ test "decode_global_get" {
     None => inspect("missing_idx", content="unexpected")
   }
 }
+
+///|
+test "decode_f32_const" {
+  // f32.const followed by 4 bytes LE (e.g. 1.0f = 0x3F800000)
+  let r = @binary_reader.BinaryReader::new(b"\x43\x00\x00\x80\x3F")
+  let inst = decode_instruction(r)
+  inspect(inst.opcode.to_string(), content="f32.const")
+  match inst.f32_imm {
+    Some(bits) => inspect(bits, content="1065353216")
+    None => inspect("missing_imm", content="unexpected")
+  }
+}
+
+///|
+test "decode_f64_const" {
+  // f64.const followed by 8 bytes LE (e.g. 1.0 = 0x3FF0000000000000)
+  let r = @binary_reader.BinaryReader::new(
+    b"\x44\x00\x00\x00\x00\x00\x00\xF0\x3F",
+  )
+  let inst = decode_instruction(r)
+  inspect(inst.opcode.to_string(), content="f64.const")
+  match inst.f64_imm {
+    Some(bits) => inspect(bits, content="4607182418800017408")
+    None => inspect("missing_imm", content="unexpected")
+  }
+}
+
+///|
+test "decode_br_table" {
+  // br_table with 2 targets (1, 2) and default 0
+  // 0x0E, count=2, targets=[1, 2], default=0
+  let r = @binary_reader.BinaryReader::new(b"\x0E\x02\x01\x02\x00")
+  let inst = decode_instruction(r)
+  inspect(inst.opcode.to_string(), content="br_table")
+  inspect(inst.label_indices.length(), content="2")
+  inspect(inst.label_indices[0], content="1")
+  inspect(inst.label_indices[1], content="2")
+  match inst.default_target {
+    Some(d) => inspect(d, content="0")
+    None => inspect("missing_default", content="unexpected")
+  }
+}
+
+///|
+test "decode_call_indirect" {
+  // call_indirect type_idx=3, table_idx=0
+  let r = @binary_reader.BinaryReader::new(b"\x11\x03\x00")
+  let inst = decode_instruction(r)
+  inspect(inst.opcode.to_string(), content="call_indirect")
+  match inst.type_index {
+    Some(idx) => inspect(idx, content="3")
+    None => inspect("missing_type", content="unexpected")
+  }
+}
+
+///|
+test "decode_memory_size" {
+  // memory.size 0
+  let r = @binary_reader.BinaryReader::new(b"\x3F\x00")
+  let inst = decode_instruction(r)
+  inspect(inst.opcode.to_string(), content="memory.size")
+  match inst.mem_index {
+    Some(idx) => inspect(idx, content="0")
+    None => inspect("missing_mem", content="unexpected")
+  }
+}
+
+///|
+test "decode_memory_grow" {
+  // memory.grow 0
+  let r = @binary_reader.BinaryReader::new(b"\x40\x00")
+  let inst = decode_instruction(r)
+  inspect(inst.opcode.to_string(), content="memory.grow")
+  match inst.mem_index {
+    Some(idx) => inspect(idx, content="0")
+    None => inspect("missing_mem", content="unexpected")
+  }
+}
+
+///|
+test "decode_i32_load8_s" {
+  // i32.load8_s align=0 offset=4 (opcode 0x30)
+  let r = @binary_reader.BinaryReader::new(b"\x30\x00\x04")
+  let inst = decode_instruction(r)
+  inspect(inst.opcode.to_string(), content="i32.load8_s")
+  match inst.mem_arg {
+    Some(ma) => {
+      inspect(ma.align, content="0")
+      inspect(ma.offset, content="4")
+    }
+    None => inspect("missing_memarg", content="unexpected")
+  }
+}
+
+///|
+test "decode_i64_store32" {
+  // i64.store32 align=2 offset=8 (opcode 0x3E)
+  let r = @binary_reader.BinaryReader::new(b"\x3E\x02\x08")
+  let inst = decode_instruction(r)
+  inspect(inst.opcode.to_string(), content="i64.store32")
+  match inst.mem_arg {
+    Some(ma) => {
+      inspect(ma.align, content="2")
+      inspect(ma.offset, content="8")
+    }
+    None => inspect("missing_memarg", content="unexpected")
+  }
+}
+
+///|
+test "disassemble_f32_const" {
+  let code : Bytes = b"\x43\x00\x00\x80\x3F\x0B"
+  let lines = disassemble_function(code)
+  inspect(lines.length(), content="2")
+  inspect(lines[0], content="f32.const 0x1065353216")
+}
+
+///|
+test "disassemble_memory_size" {
+  let code : Bytes = b"\x3F\x00\x0B"
+  let lines = disassemble_function(code)
+  inspect(lines.length(), content="2")
+  inspect(lines[0], content="memory.size 0")
+}
