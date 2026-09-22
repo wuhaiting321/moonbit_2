@@ -27,9 +27,8 @@ test "parse_name_section_function_names" {
   // subsection 1: count=1, index=0, name="fn"
   // subsection content size: 1 (count) + 1 (index) + 1 (name_len) + 2 (name) = 5
   let parts : Array[Byte] = [
-    b'\x04', b'n', b'a', b'm', b'e',
-    b'\x01', b'\x05',
-    b'\x01', b'\x00', b'\x02', b'f', b'n',
+    b'\x04', b'n', b'a', b'm', b'e', b'\x01', b'\x05', b'\x01', b'\x00', b'\x02',
+    b'f', b'n',
   ]
   let payload = Bytes::from_array(parts)
   let ns = parse_name_section(payload)
@@ -43,9 +42,9 @@ test "function_name_lookup" {
   let ns : NameSection = {
     module_name: None,
     function_names: [
-      { index: 0, name: "init" },
-      { index: 1, name: "process" },
-      { index: 2, name: "cleanup" },
+      { index: 0, name: "init", },
+      { index: 1, name: "process", },
+      { index: 2, name: "cleanup", },
     ],
     local_names: [],
   }

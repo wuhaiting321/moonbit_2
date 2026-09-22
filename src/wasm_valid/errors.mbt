@@ -23,13 +23,13 @@ pub(all) struct ValidResult {
 ///|
 /// Create a successful validation result
 pub fn ValidResult::ok() -> ValidResult {
-  { errors: [], is_valid: true }
+  { errors: [], is_valid: true, }
 }
 
 ///|
 /// Create a failed validation result with one error
 pub fn ValidResult::fail(msg : String) -> ValidResult {
-  { errors: [msg], is_valid: false }
+  { errors: [msg], is_valid: false, }
 }
 
 ///|

@@ -80,10 +80,7 @@ test "parse_func_type_with_params_and_results" {
 
 ///|
 test "func_type_to_string" {
-  let ft : FuncType = {
-    params: [I32, I64],
-    results: [F64],
-  }
+  let ft : FuncType = { params: [I32, I64], results: [F64], }
   inspect(ft.to_string(), content="(func (param i32 i64) (result f64))")
 }
 

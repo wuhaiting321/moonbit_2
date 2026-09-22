@@ -9,9 +9,7 @@ pub fn dump_sections(wm : @model.WasmModule) -> Unit {
   let mut i = 0
   while i < wm.binary.sections.length() {
     let sec = wm.binary.sections[i]
-    println(
-      "  [\{i}]  \{sec.id.to_string()}     \{sec.payload_size} bytes",
-    )
+    println("  [\{i}]  \{sec.id.to_string()}     \{sec.payload_size} bytes")
     i = i + 1
   }
 }
@@ -135,9 +133,7 @@ pub fn dump_elements(wm : @model.WasmModule) -> Unit {
       @wasm_section.Passive => "passive"
       @wasm_section.Declarative => "declarative"
     }
-    println(
-      "  [\{i}] \{kind_str}, \{elem.func_indices.length()} func refs",
-    )
+    println("  [\{i}] \{kind_str}, \{elem.func_indices.length()} func refs")
     i = i + 1
   }
 }
@@ -158,10 +154,7 @@ pub fn dump_code(wm : @model.WasmModule) -> Unit {
 
 ///|
 /// Execute CLI action dispatch
-pub fn execute_cli_action(
-  opts : CliOptions,
-  wm : @model.WasmModule,
-) -> Unit {
+pub fn execute_cli_action(opts : CliOptions, wm : @model.WasmModule) -> Unit {
   if opts.show_sections {
     dump_sections(wm)
   }

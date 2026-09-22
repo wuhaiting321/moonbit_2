@@ -19,9 +19,7 @@ pub fn parse_type_section(
 
 ///|
 /// Parse the Function section payload (vector of type indices)
-pub fn parse_function_section(
-  payload : Bytes,
-) -> Array[UInt] raise Error {
+pub fn parse_function_section(payload : Bytes) -> Array[UInt] raise Error {
   let reader = @binary_reader.BinaryReader::new(payload)
   let count = reader.read_uleb128_u32().reinterpret_as_int()
   let indices = Array(capacity=count)
@@ -41,16 +39,14 @@ pub(all) struct TableEntry {
 
 ///|
 /// Parse the Table section payload
-pub fn parse_table_section(
-  payload : Bytes,
-) -> Array[TableEntry] raise Error {
+pub fn parse_table_section(payload : Bytes) -> Array[TableEntry] raise Error {
   let reader = @binary_reader.BinaryReader::new(payload)
   let count = reader.read_uleb128_u32().reinterpret_as_int()
   let tables = Array(capacity=count)
   let mut i = 0
   while i < count {
     let tt = @wasm_type.parse_table_type(reader)
-    tables.push({ table_type: tt })
+    tables.push({ table_type: tt, })
     i = i + 1
   }
   tables
@@ -64,16 +60,14 @@ pub(all) struct MemoryEntry {
 
 ///|
 /// Parse the Memory section payload
-pub fn parse_memory_section(
-  payload : Bytes,
-) -> Array[MemoryEntry] raise Error {
+pub fn parse_memory_section(payload : Bytes) -> Array[MemoryEntry] raise Error {
   let reader = @binary_reader.BinaryReader::new(payload)
   let count = reader.read_uleb128_u32().reinterpret_as_int()
   let memories = Array(capacity=count)
   let mut i = 0
   while i < count {
     let mt = @wasm_type.parse_mem_type(reader)
-    memories.push({ mem_type: mt })
+    memories.push({ mem_type: mt, })
     i = i + 1
   }
   memories
@@ -88,9 +82,7 @@ pub(all) struct GlobalEntry {
 
 ///|
 /// Parse the Global section payload
-pub fn parse_global_section(
-  payload : Bytes,
-) -> Array[GlobalEntry] raise Error {
+pub fn parse_global_section(payload : Bytes) -> Array[GlobalEntry] raise Error {
   let reader = @binary_reader.BinaryReader::new(payload)
   let count = reader.read_uleb128_u32().reinterpret_as_int()
   let globals = Array(capacity=count)
@@ -118,10 +110,7 @@ pub fn parse_global_section(
       expr_arr[k] = payload[expr_start + k]
       k = k + 1
     }
-    globals.push({
-      global_type: gt,
-      init_expr: Bytes::from_array(expr_arr),
-    })
+    globals.push({ global_type: gt, init_expr: Bytes::from_array(expr_arr), })
     i = i + 1
   }
   globals
@@ -129,18 +118,14 @@ pub fn parse_global_section(
 
 ///|
 /// Parse the Start section payload (function index)
-pub fn parse_start_section(
-  payload : Bytes,
-) -> UInt raise Error {
+pub fn parse_start_section(payload : Bytes) -> UInt raise Error {
   let reader = @binary_reader.BinaryReader::new(payload)
   reader.read_uleb128_u32()
 }
 
 ///|
 /// Parse the DataCount section payload
-pub fn parse_datacount_section(
-  payload : Bytes,
-) -> UInt raise Error {
+pub fn parse_datacount_section(payload : Bytes) -> UInt raise Error {
   let reader = @binary_reader.BinaryReader::new(payload)
   reader.read_uleb128_u32()
 }

@@ -88,8 +88,7 @@ test "parse_unknown_option" {
 test "parse_multiple_files_rejected" {
   let opts = parse_cli_args(["a.wasm", "b.wasm"])
   match opts.error {
-    Some(msg) =>
-      inspect(msg.has_prefix("Multiple"), content="true")
+    Some(msg) => inspect(msg.has_prefix("Multiple"), content="true")
     None => inspect("no_error", content="unexpected")
   }
 }
@@ -104,15 +103,8 @@ test "parse_process_args_skips_executable" {
 ///|
 test "parse_all_inspection_flags" {
   let opts = parse_cli_args([
-    "--sections",
-    "--types",
-    "--imports",
-    "--exports",
-    "--functions",
-    "--globals",
-    "--memories",
-    "--tables",
-    "test.wasm",
+    "--sections", "--types", "--imports", "--exports", "--functions", "--globals",
+    "--memories", "--tables", "test.wasm",
   ])
   inspect(opts.show_sections, content="true")
   inspect(opts.show_types, content="true")

@@ -15,14 +15,12 @@ pub(all) struct CustomSection {
 
 ///|
 /// Parse a custom section payload (name + remaining bytes)
-pub fn parse_custom_section(
-  payload : Bytes,
-) -> CustomSection raise Error {
+pub fn parse_custom_section(payload : Bytes) -> CustomSection raise Error {
   let reader = @binary_reader.BinaryReader::new(payload)
   let name = reader.read_wasm_name()
   let remaining = reader.remaining()
   let data = reader.read_bytes(remaining)
-  { name, payload: data }
+  { name, payload: data, }
 }
 
 ///|
@@ -51,15 +49,15 @@ pub(all) struct NameSection {
 
 ///|
 /// Parse the name custom section
-pub fn parse_name_section(
-  payload : Bytes,
-) -> NameSection raise Error {
+pub fn parse_name_section(payload : Bytes) -> NameSection raise Error {
   let reader = @binary_reader.BinaryReader::new(payload)
 
   // Read section name first
   let section_name = reader.read_wasm_name()
   if section_name != "name" {
-    raise InvalidNameSection(reason="expected name section, got: \{section_name}")
+    raise InvalidNameSection(
+      reason="expected name section, got: \{section_name}",
+    )
   }
 
   let mut module_name : String? = None
@@ -72,10 +70,9 @@ pub fn parse_name_section(
     let subsection_start = reader.get_offset()
 
     match subsection_id {
-      b'\x00' => {
+      b'\x00' =>
         // Module name
         module_name = Some(reader.read_wasm_name())
-      }
       b'\x01' => {
         // Function names: name map
         let count = reader.read_uleb128_u32().reinterpret_as_int()
@@ -83,7 +80,7 @@ pub fn parse_name_section(
         while i < count {
           let idx = reader.read_uleb128_u32()
           let name = reader.read_wasm_name()
-          function_names.push({ index: idx, name })
+          function_names.push({ index: idx, name, })
           i = i + 1
         }
       }
@@ -99,7 +96,7 @@ pub fn parse_name_section(
           while j < local_count {
             let local_idx = reader.read_uleb128_u32()
             let name = reader.read_wasm_name()
-            entries.push({ index: local_idx, name })
+            entries.push({ index: local_idx, name, })
             j = j + 1
           }
           local_names.push((func_idx, entries))
@@ -122,15 +119,12 @@ pub fn parse_name_section(
     }
   }
 
-  { module_name, function_names, local_names }
+  { module_name, function_names, local_names, }
 }
 
 ///|
 /// Lookup function name by index
-pub fn NameSection::function_name(
-  self : NameSection,
-  index : UInt,
-) -> String? {
+pub fn NameSection::function_name(self : NameSection, index : UInt) -> String? {
   let mut i = 0
   while i < self.function_names.length() {
     if self.function_names[i].index == index {

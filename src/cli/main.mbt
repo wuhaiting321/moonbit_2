@@ -80,10 +80,7 @@ fn main {
     @cli_core.execute_cli_action(opts, wasm_mod)
   } else {
     println(
-      @cli_core.render_analysis_summary(
-        wasm_mod.summary(),
-        opts.output_format,
-      ),
+      @cli_core.render_analysis_summary(wasm_mod.summary(), opts.output_format),
     )
   }
 }

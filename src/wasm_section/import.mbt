@@ -82,9 +82,7 @@ fn parse_import_desc(
 
 ///|
 /// Parse the Import section payload
-pub fn parse_import_section(
-  payload : Bytes,
-) -> Array[Import] raise Error {
+pub fn parse_import_section(payload : Bytes) -> Array[Import] raise Error {
   let reader = @binary_reader.BinaryReader::new(payload)
   let count = reader.read_uleb128_u32().reinterpret_as_int()
   let imports = Array(capacity=count)
@@ -93,7 +91,7 @@ pub fn parse_import_section(
     let mod_name = reader.read_wasm_name()
     let name = reader.read_wasm_name()
     let desc = parse_import_desc(reader)
-    imports.push({ mod_name, name, desc })
+    imports.push({ mod_name, name, desc, })
     i = i + 1
   }
   imports
@@ -130,9 +128,7 @@ pub fn Export::to_string(self : Export) -> String {
 
 ///|
 /// Parse the Export section payload
-pub fn parse_export_section(
-  payload : Bytes,
-) -> Array[Export] raise Error {
+pub fn parse_export_section(payload : Bytes) -> Array[Export] raise Error {
   let reader = @binary_reader.BinaryReader::new(payload)
   let count = reader.read_uleb128_u32().reinterpret_as_int()
   let exports = Array(capacity=count)
@@ -148,7 +144,7 @@ pub fn parse_export_section(
       _ => raise InvalidSectionId(id=kind_byte)
     }
     let index = reader.read_uleb128_u32()
-    exports.push({ name, kind, index })
+    exports.push({ name, kind, index, })
     i = i + 1
   }
   exports

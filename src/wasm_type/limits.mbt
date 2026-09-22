@@ -19,16 +19,14 @@ pub fn Limits::to_string(self : Limits) -> String {
 
 ///|
 /// Parse limits from binary reader
-pub fn parse_limits(
-  reader : @binary_reader.BinaryReader,
-) -> Limits raise Error {
+pub fn parse_limits(reader : @binary_reader.BinaryReader) -> Limits raise Error {
   let flag = reader.read_u8()
   let min = reader.read_uleb128_u32()
   if flag == 0x01 {
     let max = reader.read_uleb128_u32()
-    { min, max: Some(max) }
+    { min, max: Some(max), }
   } else {
-    { min, max: None }
+    { min, max: None, }
   }
 }
 
@@ -62,8 +60,12 @@ pub fn parse_global_type(
 ) -> GlobalType raise Error {
   let val_type = parse_val_type(reader)
   let mut_byte = reader.read_u8()
-  let mutability : Mutability = if mut_byte == 0x01 { Mutable } else { Immutable }
-  { val_type, mutability }
+  let mutability : Mutability = if mut_byte == 0x01 {
+    Mutable
+  } else {
+    Immutable
+  }
+  { val_type, mutability, }
 }
 
 ///|
@@ -102,7 +104,7 @@ pub fn parse_table_type(
     _ => raise UnknownRefType(code~)
   }
   let limits = parse_limits(reader)
-  { elem_type, limits }
+  { elem_type, limits, }
 }
 
 ///|

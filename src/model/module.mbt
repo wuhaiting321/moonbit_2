@@ -39,10 +39,7 @@ pub fn WasmModule::parse(
   // Parse type section
   let func_types : Array[@wasm_type.FuncType] = match
     binary.find_section(@wasm_section.Type) {
-    Some(sec) =>
-      @wasm_section.parse_type_section(sec.payload) catch {
-        _ => []
-      }
+    Some(sec) => @wasm_section.parse_type_section(sec.payload) catch { _ => [] }
     None => []
   }
 
@@ -107,28 +104,28 @@ pub fn WasmModule::parse(
   }
 
   // Parse start section
-  let start_func : UInt? = match
-    binary.find_section(@wasm_section.Start) {
+  let start_func : UInt? = match binary.find_section(@wasm_section.Start) {
     Some(sec) => {
       let idx = @wasm_section.parse_start_section(sec.payload) catch {
-        _ => return {
-          name,
-          binary,
-          func_types,
-          imports,
-          func_type_indices,
-          tables,
-          memories,
-          globals,
-          exports,
-          start_func: None,
-          bodies: [],
-          elements: [],
-          data_segments: [],
-          custom_sections: [],
-          name_section: None,
-          byte_length,
-        }
+        _ =>
+          return {
+            name,
+            binary,
+            func_types,
+            imports,
+            func_type_indices,
+            tables,
+            memories,
+            globals,
+            exports,
+            start_func: None,
+            bodies: [],
+            elements: [],
+            data_segments: [],
+            custom_sections: [],
+            name_section: None,
+            byte_length,
+          }
       }
       Some(idx)
     }
@@ -148,20 +145,14 @@ pub fn WasmModule::parse(
   // Parse code section
   let bodies : Array[@wasm_section.FuncBody] = match
     binary.find_section(@wasm_section.Code) {
-    Some(sec) =>
-      @wasm_section.parse_code_section(sec.payload) catch {
-        _ => []
-      }
+    Some(sec) => @wasm_section.parse_code_section(sec.payload) catch { _ => [] }
     None => []
   }
 
   // Parse data section
   let data_segments : Array[@wasm_section.DataSegment] = match
     binary.find_section(@wasm_section.Data) {
-    Some(sec) =>
-      @wasm_section.parse_data_section(sec.payload) catch {
-        _ => []
-      }
+    Some(sec) => @wasm_section.parse_data_section(sec.payload) catch { _ => [] }
     None => []
   }
 
@@ -171,11 +162,11 @@ pub fn WasmModule::parse(
   let customs = binary.custom_sections()
   for csec in customs {
     let parsed = @wasm_custom.parse_custom_section(csec.payload) catch {
-      _ => { continue }
+      _ => continue
     }
     if parsed.name == "name" {
       let ns = @wasm_custom.parse_name_section(csec.payload) catch {
-        _ => { continue }
+        _ => continue
       }
       name_section = Some(ns)
     }

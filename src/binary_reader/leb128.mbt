@@ -95,7 +95,7 @@ pub fn BinaryReader::read_sleb128_i32(
   // Sign extension
   let result_int = result.reinterpret_as_int()
   if shift < 32 && (byte_val & b'\x40') != b'\x00' {
-    let mask = (-1) << shift
+    let mask = -1 << shift
     result_int | mask
   } else {
     result_int

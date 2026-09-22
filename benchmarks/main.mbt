@@ -7,8 +7,8 @@ fn synthetic_wasm_module() -> Bytes {
   // Magic: \0asm, Version: 1
   // Type section (id=1): 1 func type () -> ()
   Bytes::from_array([
-    b'\x00', b'\x61', b'\x73', b'\x6D', b'\x01', b'\x00', b'\x00', b'\x00',
-    b'\x01', b'\x04', b'\x01', b'\x60', b'\x00', b'\x00',
+    b'\x00', b'\x61', b'\x73', b'\x6D', b'\x01', b'\x00', b'\x00', b'\x00', b'\x01',
+    b'\x04', b'\x01', b'\x60', b'\x00', b'\x00',
   ])
 }
 
@@ -19,14 +19,13 @@ fn synthetic_wasm_with_exports() -> Bytes {
     // Magic + version
     b'\x00', b'\x61', b'\x73', b'\x6D', b'\x01', b'\x00', b'\x00', b'\x00',
     // Type section: 1 type () -> ()
-    b'\x01', b'\x04', b'\x01', b'\x60', b'\x00', b'\x00',
+     b'\x01', b'\x04', b'\x01', b'\x60', b'\x00', b'\x00',
     // Function section: 1 func with type index 0
-    b'\x03', b'\x02', b'\x01', b'\x00',
+     b'\x03', b'\x02', b'\x01', b'\x00',
     // Export section: 1 export "main" -> func 0
-    b'\x07', b'\x08', b'\x01', b'\x04', b'm', b'a', b'i', b'n', b'\x00',
-    b'\x00',
+     b'\x07', b'\x08', b'\x01', b'\x04', b'm', b'a', b'i', b'n', b'\x00', b'\x00',
     // Code section: 1 body, size=2, 0 locals, end
-    b'\x0A', b'\x04', b'\x01', b'\x02', b'\x00', b'\x0B',
+     b'\x0A', b'\x04', b'\x01', b'\x02', b'\x00', b'\x0B',
   ])
 }
 

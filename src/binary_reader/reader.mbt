@@ -23,7 +23,7 @@ pub fn BinaryReader::new(
   bytes : Bytes,
   endian? : Endian = LittleEndian,
 ) -> BinaryReader {
-  { bytes, offset: 0, endian }
+  { bytes, offset: 0, endian, }
 }
 
 ///|

@@ -52,7 +52,7 @@ pub fn disassemble_instruction(inst : Instruction) -> String {
         }
         None => ()
       }
-    CallIndirect => {
+    CallIndirect =>
       match inst.type_index {
         Some(idx) => {
           buf.write_string(" (type ")
@@ -61,7 +61,6 @@ pub fn disassemble_instruction(inst : Instruction) -> String {
         }
         None => ()
       }
-    }
     LocalGet | LocalSet | LocalTee =>
       match inst.local_index {
         Some(idx) => {
@@ -78,7 +77,29 @@ pub fn disassemble_instruction(inst : Instruction) -> String {
         }
         None => ()
       }
-    I32Load | I64Load | F32Load | F64Load | I32Store | I64Store | F32Store | F64Store | I32Load8S | I32Load8U | I32Load16S | I32Load16U | I64Load8S | I64Load8U | I64Load16S | I64Load16U | I64Load32S | I64Load32U | I32Store8 | I32Store16 | I64Store8 | I64Store16 | I64Store32 =>
+    I32Load
+    | I64Load
+    | F32Load
+    | F64Load
+    | I32Store
+    | I64Store
+    | F32Store
+    | F64Store
+    | I32Load8S
+    | I32Load8U
+    | I32Load16S
+    | I32Load16U
+    | I64Load8S
+    | I64Load8U
+    | I64Load16S
+    | I64Load16U
+    | I64Load32S
+    | I64Load32U
+    | I32Store8
+    | I32Store16
+    | I64Store8
+    | I64Store16
+    | I64Store32 =>
       match inst.mem_arg {
         Some(ma) => {
           if ma.offset != 0 {
@@ -145,9 +166,7 @@ pub fn disassemble_instruction(inst : Instruction) -> String {
 
 ///|
 /// Disassemble an entire function body into WAT-style text lines
-pub fn disassemble_function(
-  code : Bytes,
-) -> Array[String] raise Error {
+pub fn disassemble_function(code : Bytes) -> Array[String] raise Error {
   let reader = @binary_reader.BinaryReader::new(code)
   let lines : Array[String] = []
   let mut depth = 0
@@ -157,15 +176,8 @@ pub fn disassemble_function(
 
     // Decrease indent for end/else
     match inst.opcode {
-      End =>
-        if depth > 0 {
-          depth = depth - 1
-        }
-      Else => {
-        if depth > 0 {
-          depth = depth - 1
-        }
-      }
+      End => if depth > 0 { depth = depth - 1 }
+      Else => if depth > 0 { depth = depth - 1 }
       _ => ()
     }
 

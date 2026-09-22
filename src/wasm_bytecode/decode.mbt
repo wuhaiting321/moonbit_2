@@ -262,10 +262,32 @@ pub fn decode_instruction(
       let idx = reader.read_uleb128_u32()
       inst.global_index = Some(idx)
     }
-    I32Load | I64Load | F32Load | F64Load | I32Store | I64Store | F32Store | F64Store | I32Load8S | I32Load8U | I32Load16S | I32Load16U | I64Load8S | I64Load8U | I64Load16S | I64Load16U | I64Load32S | I64Load32U | I32Store8 | I32Store16 | I64Store8 | I64Store16 | I64Store32 => {
+    I32Load
+    | I64Load
+    | F32Load
+    | F64Load
+    | I32Store
+    | I64Store
+    | F32Store
+    | F64Store
+    | I32Load8S
+    | I32Load8U
+    | I32Load16S
+    | I32Load16U
+    | I64Load8S
+    | I64Load8U
+    | I64Load16S
+    | I64Load16U
+    | I64Load32S
+    | I64Load32U
+    | I32Store8
+    | I32Store16
+    | I64Store8
+    | I64Store16
+    | I64Store32 => {
       let align = reader.read_uleb128_u32()
       let mem_offset = reader.read_uleb128_u32()
-      inst.mem_arg = Some({ align, offset: mem_offset })
+      inst.mem_arg = Some({ align, offset: mem_offset, })
     }
     MemorySize | MemoryGrow => {
       let mem_idx = reader.read_u8()

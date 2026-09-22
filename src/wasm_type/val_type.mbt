@@ -107,7 +107,7 @@ pub fn parse_func_type(
   }
   let params = parse_val_types(reader)
   let results = parse_val_types(reader)
-  { params, results }
+  { params, results, }
 }
 
 ///|

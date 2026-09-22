@@ -107,11 +107,7 @@ test "parse_export_section" {
 
 ///|
 test "parse_export_to_string" {
-  let ex : Export = {
-    name: "add",
-    kind: FuncExport,
-    index: 2,
-  }
+  let ex : Export = { name: "add", kind: FuncExport, index: 2, }
   inspect(ex.to_string(), content="(export \"add\" (func 2))")
 }
 
@@ -144,7 +140,21 @@ test "parse_datacount_section" {
 
 ///|
 test "section_id_roundtrip" {
-  let ids : Array[SectionId] = [Custom, Type, Import, Function, Table, Memory, Global, Export, Start, Element, Code, Data, DataCount]
+  let ids : Array[SectionId] = [
+    Custom,
+    Type,
+    Import,
+    Function,
+    Table,
+    Memory,
+    Global,
+    Export,
+    Start,
+    Element,
+    Code,
+    Data,
+    DataCount,
+  ]
   for id in ids {
     let byte = id.to_id()
     let parsed = parse_section_id(byte)
@@ -240,8 +250,5 @@ test "parse_global_section_with_init" {
   let payload : Bytes = b"\x01\x7F\x01\x41\x2A\x0B"
   let globals = parse_global_section(payload)
   inspect(globals.length(), content="1")
-  inspect(
-    globals[0].global_type.val_type.to_string(),
-    content="i32",
-  )
+  inspect(globals[0].global_type.val_type.to_string(), content="i32")
 }

@@ -106,9 +106,7 @@ pub(all) struct WasmBinary {
 
 ///|
 /// Parse the Wasm magic number and version, then all sections
-pub fn parse_wasm_binary(
-  bytes : Bytes,
-) -> WasmBinary raise Error {
+pub fn parse_wasm_binary(bytes : Bytes) -> WasmBinary raise Error {
   let reader = @binary_reader.BinaryReader::new(bytes)
 
   // Magic number: \0asm
@@ -134,10 +132,10 @@ pub fn parse_wasm_binary(
     let payload_size = reader.read_uleb128_u32()
     let payload_size_int = payload_size.reinterpret_as_int()
     let payload = reader.read_bytes(payload_size_int)
-    sections.push({ id, payload_size, payload })
+    sections.push({ id, payload_size, payload, })
   }
 
-  { version, sections }
+  { version, sections, }
 }
 
 ///|
@@ -158,9 +156,7 @@ pub fn WasmBinary::find_section(
 
 ///|
 /// Collect all custom sections
-pub fn WasmBinary::custom_sections(
-  self : WasmBinary,
-) -> Array[RawSection] {
+pub fn WasmBinary::custom_sections(self : WasmBinary) -> Array[RawSection] {
   let result : Array[RawSection] = []
   let mut i = 0
   while i < self.sections.length() {

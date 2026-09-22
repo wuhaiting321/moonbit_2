@@ -16,10 +16,7 @@ pub(all) struct ModuleDiff {
 
 ///|
 /// Compare two modules and produce a diff
-pub fn diff_modules(
-  a : WasmModule,
-  b : WasmModule,
-) -> ModuleDiff {
+pub fn diff_modules(a : WasmModule, b : WasmModule) -> ModuleDiff {
   let types_added : Array[@wasm_type.FuncType] = []
   let types_removed : Array[@wasm_type.FuncType] = []
 
@@ -195,7 +192,9 @@ pub fn ModuleDiff::to_markdown(self : ModuleDiff) -> String {
 
 ///|
 /// Build an export index mapping names to export entries
-pub fn WasmModule::export_index(self : WasmModule) -> Array[@wasm_section.Export] {
+pub fn WasmModule::export_index(
+  self : WasmModule,
+) -> Array[@wasm_section.Export] {
   self.exports
 }
 

@@ -76,21 +76,17 @@ pub fn TypeChecker::push(self : TypeChecker, val : StackVal) -> Unit {
 
 ///|
 /// Pop a value from the type stack
-pub fn TypeChecker::pop(
-  self : TypeChecker,
-) -> StackVal raise ValidError {
+pub fn TypeChecker::pop(self : TypeChecker) -> StackVal raise ValidError {
   let current_frame = self.current_frame()
   match current_frame {
-    Some(frame) => {
+    Some(frame) =>
       if self.stack.length() <= frame.stack_height && !frame.is_unreachable {
         raise StackUnderflow(offset=0, opcode="pop")
       }
-    }
-    None => {
+    None =>
       if self.stack.length() == 0 {
         raise StackUnderflow(offset=0, opcode="pop")
       }
-    }
   }
   if self.stack.length() == 0 {
     Unknown
@@ -115,11 +111,7 @@ pub fn TypeChecker::pop_expect(
       Known(vt) => vt.to_string()
       Unknown => "unknown"
     }
-    raise TypeMismatch(
-      expected=expected.to_string(),
-      got=actual_str,
-      offset~,
-    )
+    raise TypeMismatch(expected=expected.to_string(), got=actual_str, offset~)
   }
 }
 
@@ -152,7 +144,9 @@ pub fn TypeChecker::push_frame(
 
 ///|
 /// Pop a control frame
-pub fn TypeChecker::pop_frame(self : TypeChecker) -> ControlFrame raise ValidError {
+pub fn TypeChecker::pop_frame(
+  self : TypeChecker,
+) -> ControlFrame raise ValidError {
   if self.control_stack.length() == 0 {
     raise UnmatchedControl(offset=0)
   }

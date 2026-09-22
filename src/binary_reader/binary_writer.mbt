@@ -11,7 +11,7 @@ pub(all) struct BinaryWriter {
 ///|
 /// Create a new BinaryWriter instance
 pub fn BinaryWriter::new(endian? : Endian = LittleEndian) -> BinaryWriter {
-  { buffer: [], endian }
+  { buffer: [], endian, }
 }
 
 ///|
@@ -176,10 +176,7 @@ pub fn BinaryWriter::write_sleb128(self : BinaryWriter, val : Int64) -> Unit {
 
 ///|
 /// Write a Wasm name (length-prefixed UTF-8 byte vector)
-pub fn BinaryWriter::write_wasm_name(
-  self : BinaryWriter,
-  s : String,
-) -> Unit {
+pub fn BinaryWriter::write_wasm_name(self : BinaryWriter, s : String) -> Unit {
   let len = s.length()
   self.write_uleb128(len.to_uint64())
   let mut i = 0
@@ -191,10 +188,7 @@ pub fn BinaryWriter::write_wasm_name(
 
 ///|
 /// Write raw bytes without length prefix
-pub fn BinaryWriter::write_raw(
-  self : BinaryWriter,
-  data : Bytes,
-) -> Unit {
+pub fn BinaryWriter::write_raw(self : BinaryWriter, data : Bytes) -> Unit {
   let mut i = 0
   while i < data.length() {
     self.buffer.push(data[i])

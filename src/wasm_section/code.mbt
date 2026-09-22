@@ -10,9 +10,7 @@ pub(all) struct FuncBody {
 
 ///|
 /// Parse the Code section payload (vector of function bodies)
-pub fn parse_code_section(
-  payload : Bytes,
-) -> Array[FuncBody] raise Error {
+pub fn parse_code_section(payload : Bytes) -> Array[FuncBody] raise Error {
   let reader = @binary_reader.BinaryReader::new(payload)
   let count = reader.read_uleb128_u32().reinterpret_as_int()
   let bodies = Array(capacity=count)
@@ -40,7 +38,7 @@ pub fn parse_code_section(
     let consumed = code_start - body_start
     let code_len = body_size - consumed
     let code_bytes = reader.read_bytes(code_len)
-    bodies.push({ locals, code: code_bytes })
+    bodies.push({ locals, code: code_bytes, })
 
     // Ensure we consumed exactly body_size bytes
     let actual_consumed = reader.get_offset() - body_start
@@ -71,9 +69,7 @@ pub(all) struct Element {
 
 ///|
 /// Parse the Element section payload
-pub fn parse_element_section(
-  payload : Bytes,
-) -> Array[Element] raise Error {
+pub fn parse_element_section(payload : Bytes) -> Array[Element] raise Error {
   let reader = @binary_reader.BinaryReader::new(payload)
   let count = reader.read_uleb128_u32().reinterpret_as_int()
   let elements = Array(capacity=count)
@@ -150,16 +146,12 @@ pub fn parse_element_section(
           j = j + 1
         }
         elements.push({
-          kind: Active(
-            table_idx~,
-            offset_expr=Bytes::from_array(expr_arr),
-          ),
+          kind: Active(table_idx~, offset_expr=Bytes::from_array(expr_arr)),
           elem_type: @wasm_type.FuncRef,
           func_indices: indices,
         })
       }
-      _ =>
-        raise UnsupportedSegmentFlags(section="element", flags~)
+      _ => raise UnsupportedSegmentFlags(section="element", flags~)
     }
     i = i + 1
   }
@@ -182,9 +174,7 @@ pub(all) struct DataSegment {
 
 ///|
 /// Parse the Data section payload
-pub fn parse_data_section(
-  payload : Bytes,
-) -> Array[DataSegment] raise Error {
+pub fn parse_data_section(payload : Bytes) -> Array[DataSegment] raise Error {
   let reader = @binary_reader.BinaryReader::new(payload)
   let count = reader.read_uleb128_u32().reinterpret_as_int()
   let segments = Array(capacity=count)
@@ -210,10 +200,7 @@ pub fn parse_data_section(
         let data_len = reader.read_uleb128_u32().reinterpret_as_int()
         let data = reader.read_bytes(data_len)
         segments.push({
-          kind: ActiveData(
-            mem_idx=0,
-            offset_expr=Bytes::from_array(expr_arr),
-          ),
+          kind: ActiveData(mem_idx=0, offset_expr=Bytes::from_array(expr_arr)),
           data,
         })
       }
@@ -221,7 +208,7 @@ pub fn parse_data_section(
         // Passive
         let data_len = reader.read_uleb128_u32().reinterpret_as_int()
         let data = reader.read_bytes(data_len)
-        segments.push({ kind: PassiveData, data })
+        segments.push({ kind: PassiveData, data, })
       }
       2 => {
         // Active with explicit memory index
@@ -246,8 +233,7 @@ pub fn parse_data_section(
           data,
         })
       }
-      _ =>
-        raise UnsupportedSegmentFlags(section="data", flags~)
+      _ => raise UnsupportedSegmentFlags(section="data", flags~)
     }
     i = i + 1
   }

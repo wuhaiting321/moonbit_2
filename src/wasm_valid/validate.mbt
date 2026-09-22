@@ -3,9 +3,7 @@
 
 ///|
 /// Validate an entire parsed Wasm module
-pub fn validate_module(
-  binary : @wasm_section.WasmBinary,
-) -> ValidResult {
+pub fn validate_module(binary : @wasm_section.WasmBinary) -> ValidResult {
   let result = ValidResult::ok()
 
   // Extract sections
@@ -59,12 +57,9 @@ pub fn validate_module(
         }
         num_import_funcs = num_import_funcs + 1
       }
-      @wasm_section.Global(_) =>
-        num_import_globals = num_import_globals + 1
-      @wasm_section.Table(_) =>
-        num_import_tables = num_import_tables + 1
-      @wasm_section.Memory(_) =>
-        num_import_memories = num_import_memories + 1
+      @wasm_section.Global(_) => num_import_globals = num_import_globals + 1
+      @wasm_section.Table(_) => num_import_tables = num_import_tables + 1
+      @wasm_section.Memory(_) => num_import_memories = num_import_memories + 1
     }
   }
 
@@ -84,9 +79,7 @@ pub fn validate_module(
   for type_idx in func_type_indices {
     if type_idx >= func_types.length().reinterpret_as_uint() {
       result.merge(
-        ValidResult::fail(
-          "function references invalid type index \{type_idx}",
-        ),
+        ValidResult::fail("function references invalid type index \{type_idx}"),
       )
     }
   }
@@ -110,7 +103,8 @@ pub fn validate_module(
   }
 
   // Validate memory count (at most 1)
-  let total_memories = num_import_memories + memories.length().reinterpret_as_uint()
+  let total_memories = num_import_memories +
+    memories.length().reinterpret_as_uint()
   if total_memories > 1 {
     result.merge(
       ValidResult::fail(
@@ -155,7 +149,8 @@ pub fn validate_module(
       let start_idx = @wasm_section.parse_start_section(sec.payload) catch {
         _ => 0
       }
-      let total_funcs = num_import_funcs + func_type_indices.length().reinterpret_as_uint()
+      let total_funcs = num_import_funcs +
+        func_type_indices.length().reinterpret_as_uint()
       if start_idx >= total_funcs {
         result.merge(
           ValidResult::fail(
@@ -183,9 +178,12 @@ pub fn validate_module(
         )
       }
       // Validate each function body
-      let num_globals = num_import_globals + globals.length().reinterpret_as_uint()
-      let num_memories = num_import_memories + memories.length().reinterpret_as_uint()
-      let num_tables_total = num_import_tables + tables.length().reinterpret_as_uint()
+      let num_globals = num_import_globals +
+        globals.length().reinterpret_as_uint()
+      let num_memories = num_import_memories +
+        memories.length().reinterpret_as_uint()
+      let num_tables_total = num_import_tables +
+        tables.length().reinterpret_as_uint()
       let mut func_i = 0
       while func_i < bodies.length() {
         let body = bodies[func_i]
@@ -200,29 +198,18 @@ pub fn validate_module(
           None
         }
         validate_function_body(
-          body,
-          func_type,
-          func_types,
-          num_import_funcs,
-          num_defined_funcs,
-          num_globals,
-          num_memories,
-          num_tables_total,
-          func_i,
-          result,
+          body, func_type, func_types, num_import_funcs, num_defined_funcs, num_globals,
+          num_memories, num_tables_total, func_i, result,
         )
         func_i = func_i + 1
       }
     }
-    None => {
+    None =>
       if num_defined_funcs > 0 {
         result.merge(
-          ValidResult::fail(
-            "functions defined but no code section present",
-          ),
+          ValidResult::fail("functions defined but no code section present"),
         )
       }
-    }
   }
 
   result
@@ -246,9 +233,7 @@ pub fn validate_export_names(
       j = j + 1
     }
     if is_dup {
-      result.merge(
-        ValidResult::fail("duplicate export name: \"\{exp.name}\""),
-      )
+      result.merge(ValidResult::fail("duplicate export name: \"\{exp.name}\""))
     } else {
       seen.push(exp.name)
     }
@@ -284,12 +269,7 @@ fn validate_function_body(
   }
 
   let tc = TypeChecker::new(
-    func_types,
-    local_types,
-    num_import_funcs,
-    num_defined_funcs,
-    num_globals,
-    num_memories,
+    func_types, local_types, num_import_funcs, num_defined_funcs, num_globals, num_memories,
     num_tables,
   )
 
@@ -341,7 +321,9 @@ fn validate_function_body(
             }
           None => ()
         }
-      @wasm_bytecode.LocalGet | @wasm_bytecode.LocalSet | @wasm_bytecode.LocalTee =>
+      @wasm_bytecode.LocalGet
+      | @wasm_bytecode.LocalSet
+      | @wasm_bytecode.LocalTee =>
         match inst.local_index {
           Some(idx) =>
             tc.check_local_index(idx) catch {
@@ -437,7 +419,7 @@ fn validate_function_body(
           Some(_) => ()
         }
       }
-      @wasm_bytecode.Else => {
+      @wasm_bytecode.Else =>
         match tc.current_frame() {
           Some(frame) =>
             if frame.opcode != @wasm_bytecode.If {
@@ -454,7 +436,6 @@ fn validate_function_body(
               ),
             )
         }
-      }
       @wasm_bytecode.Unreachable => tc.mark_unreachable()
       _ => ()
     }
