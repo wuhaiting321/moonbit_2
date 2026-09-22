@@ -78,7 +78,7 @@ pub fn disassemble_instruction(inst : Instruction) -> String {
         }
         None => ()
       }
-    I32Load | I64Load | F32Load | F64Load | I32Store | I64Store | F32Store | F64Store =>
+    I32Load | I64Load | F32Load | F64Load | I32Store | I64Store | F32Store | F64Store | I32Load8S | I32Load8U | I32Load16S | I32Load16U | I64Load8S | I64Load8U | I64Load16S | I64Load16U | I64Load32S | I64Load32U | I32Store8 | I32Store16 | I64Store8 | I64Store16 | I64Store32 =>
       match inst.mem_arg {
         Some(ma) => {
           if ma.offset != 0 {
@@ -110,6 +110,30 @@ pub fn disassemble_instruction(inst : Instruction) -> String {
         Some(v) => {
           buf.write_string(" ")
           buf.write_string(v.to_string())
+        }
+        None => ()
+      }
+    F32Const =>
+      match inst.f32_imm {
+        Some(bits) => {
+          buf.write_string(" 0x")
+          buf.write_string(bits.to_string())
+        }
+        None => ()
+      }
+    F64Const =>
+      match inst.f64_imm {
+        Some(bits) => {
+          buf.write_string(" 0x")
+          buf.write_string(bits.to_string())
+        }
+        None => ()
+      }
+    MemorySize | MemoryGrow =>
+      match inst.mem_index {
+        Some(idx) => {
+          buf.write_string(" ")
+          buf.write_string(idx.to_string())
         }
         None => ()
       }
