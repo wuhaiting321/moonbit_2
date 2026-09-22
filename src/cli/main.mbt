@@ -14,6 +14,9 @@ fn print_usage() -> Unit {
   println("  --globals         List Global entries")
   println("  --memories        List Memory entries")
   println("  --tables          List Table entries")
+  println("  --data            List Data segments")
+  println("  --elements        List Element segments")
+  println("  --code            List Code body summaries")
   println("  --disassemble N   Disassemble function N")
   println("  --validate        Validate the module")
   println("  --format FORMAT   Use text, markdown, or json summary output")
@@ -67,6 +70,9 @@ fn main {
     opts.show_globals ||
     opts.show_memories ||
     opts.show_tables ||
+    opts.show_data ||
+    opts.show_elements ||
+    opts.show_code ||
     opts.disassemble_func is Some(_) ||
     opts.do_validate
 

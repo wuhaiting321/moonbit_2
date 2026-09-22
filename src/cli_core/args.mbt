@@ -13,6 +13,9 @@ pub(all) struct CliOptions {
   mut show_globals : Bool
   mut show_memories : Bool
   mut show_tables : Bool
+  mut show_data : Bool
+  mut show_elements : Bool
+  mut show_code : Bool
   mut disassemble_func : UInt?
   mut do_validate : Bool
   mut output_format : String
@@ -34,6 +37,9 @@ pub fn CliOptions::default() -> CliOptions {
     show_globals: false,
     show_memories: false,
     show_tables: false,
+    show_data: false,
+    show_elements: false,
+    show_code: false,
     disassemble_func: None,
     do_validate: false,
     output_format: "text",
@@ -88,6 +94,9 @@ pub fn parse_cli_args(args : Array[String]) -> CliOptions {
       "--globals" => opts.show_globals = true
       "--memories" => opts.show_memories = true
       "--tables" => opts.show_tables = true
+      "--data" => opts.show_data = true
+      "--elements" => opts.show_elements = true
+      "--code" => opts.show_code = true
       "--validate" => opts.do_validate = true
       "--disassemble" =>
         if i + 1 < args.length() {

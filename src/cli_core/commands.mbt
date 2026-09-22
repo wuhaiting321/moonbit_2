@@ -108,6 +108,55 @@ pub fn dump_tables(wm : @model.WasmModule) -> Unit {
 }
 
 ///|
+/// Print data segments
+pub fn dump_data(wm : @model.WasmModule) -> Unit {
+  println("Data segments: \{wm.data_segments.length()}")
+  let mut i = 0
+  while i < wm.data_segments.length() {
+    let seg = wm.data_segments[i]
+    let kind_str = match seg.kind {
+      @wasm_section.ActiveData(mem_idx~, ..) => "active(mem=\{mem_idx})"
+      @wasm_section.PassiveData => "passive"
+    }
+    println("  [\{i}] \{kind_str}, \{seg.data.length()} bytes")
+    i = i + 1
+  }
+}
+
+///|
+/// Print element segments
+pub fn dump_elements(wm : @model.WasmModule) -> Unit {
+  println("Element segments: \{wm.elements.length()}")
+  let mut i = 0
+  while i < wm.elements.length() {
+    let elem = wm.elements[i]
+    let kind_str = match elem.kind {
+      @wasm_section.Active(table_idx~, ..) => "active(table=\{table_idx})"
+      @wasm_section.Passive => "passive"
+      @wasm_section.Declarative => "declarative"
+    }
+    println(
+      "  [\{i}] \{kind_str}, \{elem.func_indices.length()} func refs",
+    )
+    i = i + 1
+  }
+}
+
+///|
+/// Print code body summary
+pub fn dump_code(wm : @model.WasmModule) -> Unit {
+  println("Code bodies: \{wm.bodies.length()}")
+  let mut i = 0
+  while i < wm.bodies.length() {
+    let body = wm.bodies[i]
+    println(
+      "  [\{i}] \{body.locals.length()} locals, \{body.code.length()} bytes",
+    )
+    i = i + 1
+  }
+}
+
+///|
 /// Execute CLI action dispatch
 pub fn execute_cli_action(
   opts : CliOptions,
@@ -136,6 +185,15 @@ pub fn execute_cli_action(
   }
   if opts.show_tables {
     dump_tables(wm)
+  }
+  if opts.show_data {
+    dump_data(wm)
+  }
+  if opts.show_elements {
+    dump_elements(wm)
+  }
+  if opts.show_code {
+    dump_code(wm)
   }
   match opts.disassemble_func {
     Some(idx) => {
