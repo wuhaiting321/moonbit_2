@@ -248,6 +248,9 @@ pub fn WasmModule::get_func_type(
   }
 
   // Check defined functions
+  if func_idx < import_func_count {
+    return None
+  }
   let defined_idx = func_idx - import_func_count
   if defined_idx < self.func_type_indices.length().reinterpret_as_uint() {
     let type_idx = self.func_type_indices[defined_idx.reinterpret_as_int()]
@@ -270,6 +273,9 @@ pub fn WasmModule::disassemble_func(
       @wasm_section.FuncTypeIdx(_) => import_func_count = import_func_count + 1
       _ => ()
     }
+  }
+  if func_idx < import_func_count {
+    raise FuncIndexOutOfRange(index=func_idx)
   }
   let body_idx = func_idx - import_func_count
   if body_idx >= self.bodies.length().reinterpret_as_uint() {
