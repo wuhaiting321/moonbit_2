@@ -170,3 +170,78 @@ test "custom_sections_collected" {
   let customs = wasm.custom_sections()
   inspect(customs.length(), content="1")
 }
+
+///|
+test "parse_code_section_with_locals" {
+  // Code section: 1 body, body_size=5, 1 local decl (count=2, type=i32),
+  // code=nop end
+  let payload : Bytes = b"\x01\x05\x01\x02\x7F\x01\x0B"
+  let bodies = parse_code_section(payload)
+  inspect(bodies.length(), content="1")
+  inspect(bodies[0].locals.length(), content="2")
+  inspect(bodies[0].locals[0].to_string(), content="i32")
+  inspect(bodies[0].code.length(), content="2")
+}
+
+///|
+test "parse_element_section_active" {
+  // Element section: 1 element, flags=0, offset_expr=i32.const 0 end,
+  // 2 func indices [0, 1]
+  let payload : Bytes = b"\x01\x00\x41\x00\x0B\x02\x00\x01"
+  let elems = parse_element_section(payload)
+  inspect(elems.length(), content="1")
+  inspect(elems[0].func_indices.length(), content="2")
+  inspect(elems[0].func_indices[0], content="0")
+  inspect(elems[0].func_indices[1], content="1")
+}
+
+///|
+test "parse_element_section_passive" {
+  // Element section: 1 element, flags=1, elemkind=0, 1 func index [0]
+  let payload : Bytes = b"\x01\x01\x00\x01\x00"
+  let elems = parse_element_section(payload)
+  inspect(elems.length(), content="1")
+  match elems[0].kind {
+    Passive => inspect("passive", content="passive")
+    _ => inspect("wrong_kind", content="unexpected")
+  }
+}
+
+///|
+test "parse_data_section_active" {
+  // Data section: 1 segment, flags=0, offset_expr=i32.const 0 end,
+  // data_len=3, data=0x01 0x02 0x03
+  let payload : Bytes = b"\x01\x00\x41\x00\x0B\x03\x01\x02\x03"
+  let segs = parse_data_section(payload)
+  inspect(segs.length(), content="1")
+  inspect(segs[0].data.length(), content="3")
+  match segs[0].kind {
+    ActiveData(mem_idx~, ..) => inspect(mem_idx, content="0")
+    _ => inspect("wrong_kind", content="unexpected")
+  }
+}
+
+///|
+test "parse_data_section_passive" {
+  // Data section: 1 segment, flags=1, data_len=2, data=0xAA 0xBB
+  let payload : Bytes = b"\x01\x01\x02\xAA\xBB"
+  let segs = parse_data_section(payload)
+  inspect(segs.length(), content="1")
+  inspect(segs[0].data.length(), content="2")
+  match segs[0].kind {
+    PassiveData => inspect("passive", content="passive")
+    _ => inspect("wrong_kind", content="unexpected")
+  }
+}
+
+///|
+test "parse_global_section_with_init" {
+  // Global section: 1 global, type=i32 mutable, init=i32.const 42 end
+  let payload : Bytes = b"\x01\x7F\x01\x41\x2A\x0B"
+  let globals = parse_global_section(payload)
+  inspect(globals.length(), content="1")
+  inspect(
+    globals[0].global_type.val_type.to_string(),
+    content="i32",
+  )
+}
