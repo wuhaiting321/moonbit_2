@@ -1,0 +1,7 @@
+import {
+  "wuhaiting321/wasmkit/src/wasm_type",
+  "wuhaiting321/wasmkit/src/wasm_section",
+  "wuhaiting321/wasmkit/src/wasm_bytecode",
+  "wuhaiting321/wasmkit/src/wasm_custom",
+  "wuhaiting321/wasmkit/src/wasm_valid",
+}

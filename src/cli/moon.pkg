@@ -1,0 +1,10 @@
+import {
+  "wuhaiting321/wasmkit/src/cli_core",
+  "wuhaiting321/wasmkit/src/model",
+  "moonbitlang/core/env",
+  "moonbitlang/x/fs",
+}
+
+supported_targets = "native"
+
+pkgtype(kind: "executable")
