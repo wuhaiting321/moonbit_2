@@ -24,6 +24,7 @@ pub(all) struct WasmModule {
   data_segments : Array[@wasm_section.DataSegment]
   custom_sections : Array[@wasm_custom.CustomSection]
   name_section : @wasm_custom.NameSection?
+  byte_length : UInt
 } derive(Debug)
 
 ///|
@@ -33,6 +34,7 @@ pub fn WasmModule::parse(
   bytes : Bytes,
 ) -> WasmModule raise Error {
   let binary = @wasm_section.parse_wasm_binary(bytes)
+  let byte_length = bytes.length().reinterpret_as_uint()
 
   // Parse type section
   let func_types : Array[@wasm_type.FuncType] = match
@@ -125,6 +127,7 @@ pub fn WasmModule::parse(
           data_segments: [],
           custom_sections: [],
           name_section: None,
+          byte_length,
         }
       }
       Some(idx)
@@ -195,6 +198,7 @@ pub fn WasmModule::parse(
     data_segments,
     custom_sections,
     name_section,
+    byte_length,
   }
 }
 

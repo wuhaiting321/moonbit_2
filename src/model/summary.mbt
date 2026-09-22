@@ -89,7 +89,7 @@ pub fn WasmModule::summary(self : WasmModule) -> ModuleSummary {
     num_data_segments: self.data_segments.length().reinterpret_as_uint(),
     num_elements: self.elements.length().reinterpret_as_uint(),
     has_start: self.start_func is Some(_),
-    total_bytes: 0,
+    total_bytes: self.byte_length,
   }
 }
 
