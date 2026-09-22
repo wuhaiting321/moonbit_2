@@ -1,4 +1,5 @@
 import {
+  "wuhaiting321/wasmkit/src/binary_reader",
   "wuhaiting321/wasmkit/src/wasm_type",
   "wuhaiting321/wasmkit/src/wasm_section",
   "wuhaiting321/wasmkit/src/wasm_bytecode",

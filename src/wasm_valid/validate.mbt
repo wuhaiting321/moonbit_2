@@ -182,6 +182,37 @@ pub fn validate_module(
           ),
         )
       }
+      // Validate each function body
+      let num_globals = num_import_globals + globals.length().reinterpret_as_uint()
+      let num_memories = num_import_memories + memories.length().reinterpret_as_uint()
+      let num_tables_total = num_import_tables + tables.length().reinterpret_as_uint()
+      let mut func_i = 0
+      while func_i < bodies.length() {
+        let body = bodies[func_i]
+        let type_idx = if func_i < func_type_indices.length() {
+          func_type_indices[func_i]
+        } else {
+          0
+        }
+        let func_type = if type_idx < func_types.length().reinterpret_as_uint() {
+          Some(func_types[type_idx.reinterpret_as_int()])
+        } else {
+          None
+        }
+        validate_function_body(
+          body,
+          func_type,
+          func_types,
+          num_import_funcs,
+          num_defined_funcs,
+          num_globals,
+          num_memories,
+          num_tables_total,
+          func_i,
+          result,
+        )
+        func_i = func_i + 1
+      }
     }
     None => {
       if num_defined_funcs > 0 {
@@ -221,5 +252,225 @@ pub fn validate_export_names(
     } else {
       seen.push(exp.name)
     }
+  }
+}
+
+///|
+/// Validate a single function body: decode instructions, check indices,
+/// and verify control-flow structure
+fn validate_function_body(
+  body : @wasm_section.FuncBody,
+  func_type : @wasm_type.FuncType?,
+  func_types : Array[@wasm_type.FuncType],
+  num_import_funcs : UInt,
+  num_defined_funcs : UInt,
+  num_globals : UInt,
+  num_memories : UInt,
+  num_tables : UInt,
+  func_index : Int,
+  result : ValidResult,
+) -> Unit {
+  // Build local types: params + body locals
+  let local_types : Array[@wasm_type.ValType] = []
+  match func_type {
+    Some(ft) =>
+      for p in ft.params {
+        local_types.push(p)
+      }
+    None => ()
+  }
+  for lt in body.locals {
+    local_types.push(lt)
+  }
+
+  let tc = TypeChecker::new(
+    func_types,
+    local_types,
+    num_import_funcs,
+    num_defined_funcs,
+    num_globals,
+    num_memories,
+    num_tables,
+  )
+
+  // Push the function's implicit block frame
+  let result_types : Array[@wasm_type.ValType] = match func_type {
+    Some(ft) => ft.results
+    None => []
+  }
+  tc.push_frame(@wasm_bytecode.Block, [], result_types)
+
+  let reader = @binary_reader.BinaryReader::new(body.code)
+  let mut inst_count = 0
+  while reader.remaining() > 0 {
+    let inst = @wasm_bytecode.decode_instruction(reader) catch {
+      _ => {
+        result.merge(
+          ValidResult::fail(
+            "func[\{func_index}]: decode error at instruction \{inst_count}",
+          ),
+        )
+        return
+      }
+    }
+
+    // Validate index references
+    match inst.opcode {
+      @wasm_bytecode.Call =>
+        match inst.func_index {
+          Some(idx) =>
+            tc.check_func_index(idx) catch {
+              _ =>
+                result.merge(
+                  ValidResult::fail(
+                    "func[\{func_index}]: invalid func index \{idx} at instruction \{inst_count}",
+                  ),
+                )
+            }
+          None => ()
+        }
+      @wasm_bytecode.CallIndirect =>
+        match inst.type_index {
+          Some(idx) =>
+            if idx >= func_types.length().reinterpret_as_uint() {
+              result.merge(
+                ValidResult::fail(
+                  "func[\{func_index}]: call_indirect references invalid type index \{idx}",
+                ),
+              )
+            }
+          None => ()
+        }
+      @wasm_bytecode.LocalGet | @wasm_bytecode.LocalSet | @wasm_bytecode.LocalTee =>
+        match inst.local_index {
+          Some(idx) =>
+            tc.check_local_index(idx) catch {
+              _ =>
+                result.merge(
+                  ValidResult::fail(
+                    "func[\{func_index}]: invalid local index \{idx} at instruction \{inst_count}",
+                  ),
+                )
+            }
+          None => ()
+        }
+      @wasm_bytecode.GlobalGet | @wasm_bytecode.GlobalSet =>
+        match inst.global_index {
+          Some(idx) =>
+            tc.check_global_index(idx) catch {
+              _ =>
+                result.merge(
+                  ValidResult::fail(
+                    "func[\{func_index}]: invalid global index \{idx} at instruction \{inst_count}",
+                  ),
+                )
+            }
+          None => ()
+        }
+      @wasm_bytecode.Br | @wasm_bytecode.BrIf =>
+        if inst.label_indices.length() > 0 {
+          tc.check_label_index(inst.label_indices[0]) catch {
+            _ =>
+              result.merge(
+                ValidResult::fail(
+                  "func[\{func_index}]: invalid label index \{inst.label_indices[0]} at instruction \{inst_count}",
+                ),
+              )
+          }
+        }
+      @wasm_bytecode.BrTable => {
+        for idx in inst.label_indices {
+          tc.check_label_index(idx) catch {
+            _ =>
+              result.merge(
+                ValidResult::fail(
+                  "func[\{func_index}]: invalid label index \{idx} at instruction \{inst_count}",
+                ),
+              )
+          }
+        }
+        match inst.default_target {
+          Some(d) =>
+            tc.check_label_index(d) catch {
+              _ =>
+                result.merge(
+                  ValidResult::fail(
+                    "func[\{func_index}]: invalid default label index \{d} at instruction \{inst_count}",
+                  ),
+                )
+            }
+          None => ()
+        }
+      }
+      _ => ()
+    }
+
+    // Track control flow structure
+    match inst.opcode {
+      @wasm_bytecode.Block | @wasm_bytecode.Loop | @wasm_bytecode.If => {
+        let end_types : Array[@wasm_type.ValType] = match inst.block_type {
+          Some(@wasm_type.Value(vt)) => [vt]
+          Some(@wasm_type.TypeIndex(idx)) =>
+            if idx < func_types.length().reinterpret_as_uint() {
+              func_types[idx.reinterpret_as_int()].results
+            } else {
+              []
+            }
+          _ => []
+        }
+        tc.push_frame(inst.opcode, [], end_types)
+      }
+      @wasm_bytecode.End => {
+        let popped = try {
+          let f = tc.pop_frame()
+          Some(f)
+        } catch {
+          _ => None
+        }
+        match popped {
+          None =>
+            result.merge(
+              ValidResult::fail(
+                "func[\{func_index}]: unmatched end at instruction \{inst_count}",
+              ),
+            )
+          Some(_) => ()
+        }
+      }
+      @wasm_bytecode.Else => {
+        match tc.current_frame() {
+          Some(frame) =>
+            if frame.opcode != @wasm_bytecode.If {
+              result.merge(
+                ValidResult::fail(
+                  "func[\{func_index}]: else without matching if at instruction \{inst_count}",
+                ),
+              )
+            }
+          None =>
+            result.merge(
+              ValidResult::fail(
+                "func[\{func_index}]: else without control frame at instruction \{inst_count}",
+              ),
+            )
+        }
+      }
+      @wasm_bytecode.Unreachable => tc.mark_unreachable()
+      _ => ()
+    }
+
+    inst_count = inst_count + 1
+  }
+
+  // After processing all instructions, the function's implicit block
+  // frame should have been closed by the final 'end' instruction.
+  // If control_stack still has frames, the function body is missing
+  // end instructions.
+  if tc.control_stack.length() > 0 {
+    result.merge(
+      ValidResult::fail(
+        "func[\{func_index}]: \{tc.control_stack.length()} unclosed control frame(s)",
+      ),
+    )
   }
 }
