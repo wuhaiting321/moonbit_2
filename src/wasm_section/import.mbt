@@ -145,7 +145,7 @@ pub fn parse_export_section(
       b'\x01' => TableExport
       b'\x02' => MemExport
       b'\x03' => GlobalExport
-      _ => FuncExport
+      _ => raise InvalidSectionId(id=kind_byte)
     }
     let index = reader.read_uleb128_u32()
     exports.push({ name, kind, index })

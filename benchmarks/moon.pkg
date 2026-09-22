@@ -1,5 +1,4 @@
 import {
-  "wuhaiting321/wasmkit/src/wasm_section",
   "wuhaiting321/wasmkit/src/model",
   "moonbitlang/core/env",
 }

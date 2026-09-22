@@ -40,8 +40,8 @@ test "decode_i32_const_negative" {
 
 ///|
 test "decode_i64_const" {
-  // i64.const 100 (LEB128: 0x64)
-  let r = @binary_reader.BinaryReader::new(b"\x42\x64")
+  // i64.const 100 (signed LEB128: 0xE4 0x00 to avoid sign extension)
+  let r = @binary_reader.BinaryReader::new(b"\x42\xE4\x00")
   let inst = decode_instruction(r)
   inspect(inst.opcode.to_string(), content="i64.const")
   match inst.i64_imm {
@@ -120,10 +120,11 @@ test "disassemble_block_indentation" {
   // block (empty) nop end end
   let code : Bytes = b"\x02\x40\x01\x0B\x0B"
   let lines = disassemble_function(code)
-  inspect(lines.length(), content="3")
+  inspect(lines.length(), content="4")
   inspect(lines[0], content="block")
   inspect(lines[1], content="  nop")
   inspect(lines[2], content="end")
+  inspect(lines[3], content="end")
 }
 
 ///|

@@ -110,7 +110,7 @@ pub fn parse_cli_args(args : Array[String]) -> CliOptions {
           opts.error = Some("Missing value for --format")
         }
       _ if arg.has_prefix("--format=") =>
-        set_format(opts, arg.exact_view(9).to_owned())
+        set_format(opts, arg.exact_view(start=9).to_owned())
       _ =>
         if arg.length() > 0 && arg[0] != '-' {
           if opts.file_path.length() == 0 {

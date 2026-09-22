@@ -51,7 +51,7 @@ fn main {
       return
     }
   }
-  let module = @model.WasmModule::parse(opts.file_path, bytes) catch {
+  let wasm_mod = @model.WasmModule::parse(opts.file_path, bytes) catch {
     _ => {
       println("Error: failed to parse Wasm file \{opts.file_path}")
       return
@@ -71,11 +71,11 @@ fn main {
     opts.do_validate
 
   if has_inspection {
-    @cli_core.execute_cli_action(opts, module)
+    @cli_core.execute_cli_action(opts, wasm_mod)
   } else {
     println(
       @cli_core.render_analysis_summary(
-        module.summary(),
+        wasm_mod.summary(),
         opts.output_format,
       ),
     )

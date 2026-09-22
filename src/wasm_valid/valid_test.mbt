@@ -76,8 +76,6 @@ test "type_checker_pop_expect_match" {
     true
   } catch {
     _ => false
-  } noraise {
-    _ => false
   }
   inspect(matched, content="true")
 }

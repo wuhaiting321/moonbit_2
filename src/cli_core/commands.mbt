@@ -65,7 +65,7 @@ pub fn dump_functions(wm : @model.WasmModule) -> Unit {
     let type_idx = wm.func_type_indices[i]
     let func_idx = import_func_count + i.reinterpret_as_uint()
     let type_str = if type_idx < wm.func_types.length().reinterpret_as_uint() {
-      wm.func_types[type_idx].to_string()
+      wm.func_types[type_idx.reinterpret_as_int()].to_string()
     } else {
       "unknown"
     }

@@ -23,13 +23,19 @@ test "parse_name_section_module_name" {
 
 ///|
 test "parse_name_section_function_names" {
-  // name section: subsection 1 (function names), size=8
-  // count=1, index=0, name="main" (4 bytes)
-  let payload : Bytes = b"\x04name\x01\x08\x01\x00\x04main"
+  // Build name section with function names subsection
+  // subsection 1: count=1, index=0, name="fn"
+  // subsection content size: 1 (count) + 1 (index) + 1 (name_len) + 2 (name) = 5
+  let parts : Array[Byte] = [
+    b'\x04', b'n', b'a', b'm', b'e',
+    b'\x01', b'\x05',
+    b'\x01', b'\x00', b'\x02', b'f', b'n',
+  ]
+  let payload = Bytes::from_array(parts)
   let ns = parse_name_section(payload)
   inspect(ns.function_names.length(), content="1")
   inspect(ns.function_names[0].index, content="0")
-  inspect(ns.function_names[0].name, content="main")
+  inspect(ns.function_names[0].name, content="fn")
 }
 
 ///|

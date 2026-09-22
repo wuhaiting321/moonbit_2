@@ -115,7 +115,7 @@ test "seek_beyond_bounds_is_rejected" {
 test "peek_does_not_advance_offset" {
   let r = BinaryReader::new(b"\x42\x43")
   let peeked = r.peek_u8()
-  inspect(peeked, content="66") // 0x42
+  inspect(peeked, content="b'\\x42'") // 0x42
   inspect(r.get_offset(), content="0")
 }
 
@@ -125,7 +125,7 @@ test "skip_advances_offset" {
   r.skip(2)
   inspect(r.get_offset(), content="2")
   let val = r.read_u8()
-  inspect(val, content="3") // 0x03
+  inspect(val, content="b'\\x03'") // 0x03
 }
 
 ///|
