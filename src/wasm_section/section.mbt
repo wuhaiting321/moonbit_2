@@ -7,6 +7,7 @@ pub suberror SectionError {
   InvalidMagic
   InvalidVersion(version~ : UInt)
   InvalidSectionId(id~ : Byte)
+  UnsupportedSegmentFlags(section~ : String, flags~ : UInt)
 } derive(Debug, Eq)
 
 ///|

@@ -158,21 +158,8 @@ pub fn parse_element_section(
           func_indices: indices,
         })
       }
-      _ => {
-        // Other flags: skip as passive for simplicity
-        let num_funcs = reader.read_uleb128_u32().reinterpret_as_int()
-        let indices : Array[UInt] = Array(capacity=num_funcs)
-        let mut j = 0
-        while j < num_funcs {
-          indices.push(reader.read_uleb128_u32())
-          j = j + 1
-        }
-        elements.push({
-          kind: Passive,
-          elem_type: @wasm_type.FuncRef,
-          func_indices: indices,
-        })
-      }
+      _ =>
+        raise UnsupportedSegmentFlags(section="element", flags~)
     }
     i = i + 1
   }
@@ -259,11 +246,8 @@ pub fn parse_data_section(
           data,
         })
       }
-      _ => {
-        let data_len = reader.read_uleb128_u32().reinterpret_as_int()
-        let data = reader.read_bytes(data_len)
-        segments.push({ kind: PassiveData, data })
-      }
+      _ =>
+        raise UnsupportedSegmentFlags(section="data", flags~)
     }
     i = i + 1
   }
