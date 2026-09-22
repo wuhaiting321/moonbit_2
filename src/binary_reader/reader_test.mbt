@@ -159,6 +159,103 @@ test "writer_roundtrip_wasm_name" {
 }
 
 ///|
+test "writer_write_u8" {
+  let w = BinaryWriter::new()
+  w.write_u8(b'\xAB')
+  w.write_u8(b'\xCD')
+  let bytes = w.to_bytes()
+  inspect(bytes.length(), content="2")
+  let r = BinaryReader::new(bytes)
+  inspect(r.read_u8(), content="b'\\xAB'")
+  inspect(r.read_u8(), content="b'\\xCD'")
+}
+
+///|
+test "writer_write_u16_roundtrip" {
+  let w = BinaryWriter::new()
+  w.write_u16(0x1234)
+  let bytes = w.to_bytes()
+  let r = BinaryReader::new(bytes)
+  inspect(r.read_u16(), content="4660")
+}
+
+///|
+test "writer_write_u64_roundtrip" {
+  let w = BinaryWriter::new()
+  w.write_u64(0x123456789ABCDEF0UL)
+  let bytes = w.to_bytes()
+  let r = BinaryReader::new(bytes)
+  let val = r.read_u64()
+  inspect(val, content="1311768467463790320")
+}
+
+///|
+test "writer_write_sleb128_roundtrip" {
+  let w = BinaryWriter::new()
+  w.write_sleb128(-42L)
+  let bytes = w.to_bytes()
+  let r = BinaryReader::new(bytes)
+  let val = r.read_sleb128()
+  inspect(val, content="-42")
+}
+
+///|
+test "writer_write_sleb128_positive" {
+  let w = BinaryWriter::new()
+  w.write_sleb128(100L)
+  let bytes = w.to_bytes()
+  let r = BinaryReader::new(bytes)
+  let val = r.read_sleb128()
+  inspect(val, content="100")
+}
+
+///|
+test "writer_write_raw" {
+  let w = BinaryWriter::new()
+  w.write_raw(b"\x01\x02\x03")
+  w.write_raw(b"\x04\x05")
+  inspect(w.length(), content="5")
+  let bytes = w.to_bytes()
+  let r = BinaryReader::new(bytes)
+  inspect(r.read_u8(), content="b'\\x01'")
+  inspect(r.read_u8(), content="b'\\x02'")
+  inspect(r.read_u8(), content="b'\\x03'")
+  inspect(r.read_u8(), content="b'\\x04'")
+  inspect(r.read_u8(), content="b'\\x05'")
+}
+
+///|
+test "writer_patch_u32" {
+  let w = BinaryWriter::new()
+  w.write_u32(0)
+  w.write_u32(0)
+  let ok = w.patch_u32(0, 0xDEADBEEF)
+  inspect(ok, content="true")
+  let bytes = w.to_bytes()
+  let r = BinaryReader::new(bytes)
+  inspect(r.read_u32(), content="3735928559")
+}
+
+///|
+test "writer_big_endian_u32" {
+  let w = BinaryWriter::new(endian=BigEndian)
+  w.write_u32(0x01020304)
+  let bytes = w.to_bytes()
+  inspect(bytes.length(), content="4")
+  let r = BinaryReader::new(bytes, endian=BigEndian)
+  inspect(r.read_u32(), content="16909060")
+}
+
+///|
+test "writer_big_endian_u16" {
+  let w = BinaryWriter::new(endian=BigEndian)
+  w.write_u16(0x0102)
+  let bytes = w.to_bytes()
+  let r = BinaryReader::new(bytes, endian=BigEndian)
+  inspect(r.read_u16(), content="258")
+}
+
+///|
 test "truncated_uleb128_is_rejected" {
   let rejected = try {
     let _ = BinaryReader::new(b"\x80").read_uleb128()
